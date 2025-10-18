@@ -38,7 +38,7 @@ These steps deliver a fully functional, LLM-backed story experience with validat
 - [x] Flesh out story prompts/content loaders to support editor edits.
 - [x] Port Python llm_provider configuration to TypeScript and connect engine nodes.
 - [x] Implement session persistence + REST API controllers in `apps/story-api`.
-- [ ] Build CLI client for early end-to-end testing.
-- [ ] Enhance React Flow editor with load/save + simulation hooks.
+- [x] Build CLI client for early end-to-end testing.
+- [x] Enhance React Flow editor with load/save + simulation hooks.
 - [ ] Add automated tests covering LLM mocks and parser fallbacks.
-- [ ] Document env setup and workflows for contributors.
+- [x] Document env setup and workflows for contributors (see `docs/getting-started.md`).
