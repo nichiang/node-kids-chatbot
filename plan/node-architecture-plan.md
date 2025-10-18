@@ -11,7 +11,7 @@
 
 ## Graph Engine & API (Storywriting Scope)
 - Scaffold a Fastify/NestJS-based API package with Zod/TypeBox schemas mirroring `models/schemas.py` for session payloads, focusing on story-related fields (conversation phase, design metadata, vocabulary progress, telemetry IDs).
-- Implement the graph execution runtime capable of loading story graphs, resolving node handlers (topic selection, design instructions, vocabulary logic, narrative continuation, completion handling), managing async LLM calls, and updating session state deterministically.
+- Implement the graph execution runtime capable of loading story graphs, resolving node handlers (topic selection, design instructions, vocabulary logic, narrative continuation, completion handling), managing async LLM calls, and updating session state deterministically. A prototype stub now lives in `packages/story-engine` to cover the topic → writing → completion path with template responses.
 - Port the Python story services into TypeScript modules aligned with the node taxonomy: topic bootstrap, story continuation, design phase management, vocabulary quiz lifecycle, completion/recap routines. Leave fun facts for a later phase.
 - Provide LLM/provider adapters abstracted behind interfaces so story nodes can swap providers and support deterministic fixtures for testing.
 
@@ -38,7 +38,7 @@
 ## Todo List
 - [x] Produce a detailed storywriting domain map and node taxonomy document (see `plan/storywriting-domain-map.md`).
 - [x] Decide on monorepo tooling and scaffold the TypeScript workspace for story components (see `plan/workspace-decision.md`).
-- [ ] Prototype the graph execution engine covering topic initialization through story completion.
+- [x] Prototype the graph execution engine covering topic initialization through story completion (see `packages/story-engine`).
 - [ ] Port session lifecycle management and telemetry logging for the story path.
 - [ ] Build the initial React Flow-based story editor with content integration.
 - [ ] Create migration tooling for story prompts, templates, and session data.

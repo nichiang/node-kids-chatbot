@@ -4,10 +4,7 @@ import { getThemeForTopic } from "@kids-chatbot/story-content";
 
 function App() {
   const [topic, setTopic] = useState("space");
-  const theme = getThemeForTopic({
-    session: { sessionId: "editor", turnId: 1 },
-    topic,
-  });
+  const theme = getThemeForTopic(topic);
 
   return (
     <main>

@@ -1,5 +1,13 @@
 # @kids-chatbot/story-engine
 
-Execution runtime for story graphs. Interprets node-based flows, orchestrates LLM/service calls, and updates session state.
+Prototype story graph engine that drives the topic → writing → completion loop with deterministic placeholder prompts.
 
-Current placeholder exports outline the future engine surface so other packages can begin integrating against typed contracts.
+## Current Capabilities
+- Detects a topic from learner input using keyword matching.
+- Generates an opening paragraph, one continuation turn, and a finale using templates from `@kids-chatbot/story-content`.
+- Advances and clones session state using shared types from `@kids-chatbot/story-types`.
+
+## Next Up
+- Add design-phase branching and vocabulary quiz hooks.
+- Replace template strings with real prompt/content loaders.
+- Introduce telemetry events and persistence once flows stabilize.
