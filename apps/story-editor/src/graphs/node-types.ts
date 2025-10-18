@@ -45,7 +45,7 @@ export interface StoryGraphDefinition {
   nodes: StoryGraphNode[];
   edges: StoryGraphEdge[];
 }
-	export const demoGraph: StoryGraphDefinition = {
+export const demoGraph: StoryGraphDefinition = {
   id: "story-prototype",
   label: "Story Prototype",
   nodes: [

@@ -1,12 +1,18 @@
 import ReactFlow, { Background, Controls, MiniMap } from "reactflow";
 import { useStoryGraph } from "../state/use-story-graph";
+import { nodeTypes } from "./nodes";
 
 export function StoryGraphCanvas() {
   const graph = useStoryGraph((state) => state.graph);
 
   return (
     <section className="graph-canvas">
-      <ReactFlow nodes={graph.nodes} edges={graph.edges} fitView>
+      <ReactFlow
+        nodes={graph.nodes}
+        edges={graph.edges}
+        fitView
+        nodeTypes={nodeTypes}
+      >
         <MiniMap />
         <Controls />
         <Background gap={16} color="#e1e1e1" />
