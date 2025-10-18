@@ -1,3 +1,5 @@
+export type StorySessionMode = "storywriting";
+
 export enum StoryPhase {
   Topic = "topic",
   Writing = "writing",
@@ -10,6 +12,12 @@ export interface StorySessionState {
   storyParts: string[];
   turn: number;
   isComplete: boolean;
+  sessionId?: string;
+  sessionStart?: Date;
+  lastActivity?: Date;
+  turnId: number;
+  currentStoryId?: string;
+  storyHistory: string[];
 }
 
 export interface NodeExecutionContext {
@@ -41,5 +49,7 @@ export function createInitialSessionState(): StorySessionState {
     storyParts: [],
     turn: 0,
     isComplete: false,
+    turnId: 0,
+    storyHistory: [],
   };
 }

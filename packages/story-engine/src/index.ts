@@ -12,7 +12,19 @@ import {
   buildStoryContinuation,
   buildStoryFinale,
 } from "@kids-chatbot/story-content";
+import {
+  manageSessionLifecycle,
+  cloneSessionState,
+} from "./session";
+import {
+  TelemetryEvent,
+  TelemetryLogger,
+  createNoopTelemetryLogger,
+} from "./telemetry";
 
+interface StoryEngineOptions {
+  telemetryLogger?: TelemetryLogger;
+}
 
 const topicClassifierNode: StoryNode = {
   id: "topic-classifier",
@@ -100,35 +112,40 @@ const storyCompletionNode: StoryNode = {
 };
 
 export class StoryEngine {
+  private telemetry: TelemetryLogger;
+
+  constructor(options: StoryEngineOptions = {}) {
+    this.telemetry = options.telemetryLogger ?? createNoopTelemetryLogger();
+  }
+
   async runTurn(
     userInput: string,
     sessionState?: StorySessionState,
   ): Promise<StoryTurnOutput> {
-    const session = sessionState
-      ? cloneSession(sessionState)
+    const baseSession = sessionState
+      ? cloneSessionState(sessionState)
       : createInitialSessionState();
 
+    const lifecycleManaged = manageSessionLifecycle(
+      baseSession,
+      new Date(),
+      "storywriting",
+    );
+
     const context: NodeExecutionContext = {
-      session,
+      session: lifecycleManaged,
       userInput,
     };
 
-    switch (session.phase) {
+    switch (lifecycleManaged.phase) {
       case StoryPhase.Topic:
         return this.handleTopicPhase(context);
       case StoryPhase.Writing:
         return this.handleWritingPhase(context);
       case StoryPhase.Completed:
-        return {
-          responseText:
-            "Our story is already complete! Let's start a new adventure next time.",
-          session,
-        };
+        return this.respondStoryCompleted(lifecycleManaged);
       default:
-        return {
-          responseText: "Let's create a new story!",
-          session,
-        };
+        return this.handleTopicPhase(context);
     }
   }
 
@@ -140,6 +157,8 @@ export class StoryEngine {
       session: topicResult.session,
       userInput: context.userInput,
     });
+
+    this.telemetry.log(createTelemetryEvent("story_opening", openingResult));
 
     return {
       responseText: openingResult.responseText ?? "",
@@ -153,15 +172,12 @@ export class StoryEngine {
     const { session } = context;
 
     if (session.isComplete) {
-      return {
-        responseText:
-          "Our story is already complete! Let's start a new adventure next time.",
-        session,
-      };
+      return this.respondStoryCompleted(session);
     }
 
     if (session.storyParts.length === 1) {
       const continuationResult = await storyContinuationNode.execute(context);
+      this.telemetry.log(createTelemetryEvent("story_continuation", continuationResult));
       return {
         responseText: continuationResult.responseText ?? "",
         session: continuationResult.session,
@@ -170,12 +186,19 @@ export class StoryEngine {
 
     if (session.storyParts.length === 2) {
       const completionResult = await storyCompletionNode.execute(context);
+      this.telemetry.log(createTelemetryEvent("story_completion", completionResult));
       return {
         responseText: completionResult.responseText ?? "",
         session: completionResult.session,
       };
     }
 
+    return this.respondStoryCompleted(session);
+  }
+
+  private respondStoryCompleted(
+    session: StorySessionState,
+  ): StoryTurnOutput {
     return {
       responseText:
         "Our story is already complete! Let's start a new adventure next time.",
@@ -184,16 +207,29 @@ export class StoryEngine {
   }
 }
 
-function cloneSession(session: StorySessionState): StorySessionState {
-  return {
-    ...session,
-    storyParts: [...session.storyParts],
-  };
-}
-
 export const nodes = {
   topicClassifierNode,
   storyOpeningNode,
   storyContinuationNode,
   storyCompletionNode,
 };
+
+function createTelemetryEvent(
+  eventType: TelemetryEvent["type"],
+  result: { session: StorySessionState; responseText?: string },
+): TelemetryEvent {
+  return {
+    type: eventType,
+    sessionId: result.session.sessionId ?? "unknown",
+    storyId: result.session.currentStoryId,
+    timestamp: new Date(),
+    payload: {
+      responseText: result.responseText,
+      storyLength: result.session.storyParts.length,
+      phase: result.session.phase,
+    },
+  };
+}
+
+export * from "./session";
+export * from "./telemetry";

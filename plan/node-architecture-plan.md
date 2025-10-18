@@ -39,6 +39,6 @@
 - [x] Produce a detailed storywriting domain map and node taxonomy document (see `plan/storywriting-domain-map.md`).
 - [x] Decide on monorepo tooling and scaffold the TypeScript workspace for story components (see `plan/workspace-decision.md`).
 - [x] Prototype the graph execution engine covering topic initialization through story completion (see `packages/story-engine`).
-- [ ] Port session lifecycle management and telemetry logging for the story path.
+- [x] Port session lifecycle management and telemetry logging for the story path (see `packages/story-engine/src/session.ts` and `packages/story-engine/src/telemetry.ts`).
 - [ ] Build the initial React Flow-based story editor with content integration.
 - [ ] Create migration tooling for story prompts, templates, and session data.

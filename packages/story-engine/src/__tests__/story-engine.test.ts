@@ -6,7 +6,7 @@ import {
 } from "@kids-chatbot/story-types";
 
 describe("StoryEngine", () => {
-  it("walks through topic → continuation → completion", async () => {
+  it("walks through topic → continuation → completion with lifecycle and telemetry hooks", async () => {
     const engine = new StoryEngine();
     let session = createInitialSessionState();
 
@@ -15,6 +15,10 @@ describe("StoryEngine", () => {
       session,
     );
 
+    expect(openingTurn.session.sessionId).toBeDefined();
+    expect(openingTurn.session.currentStoryId).toBeDefined();
+    expect(openingTurn.session.storyHistory).toHaveLength(1);
+    expect(openingTurn.session.turnId).toBe(1);
     expect(openingTurn.responseText).toContain("space");
     expect(openingTurn.session.phase).toBe(StoryPhase.Writing);
     expect(openingTurn.session.storyParts).toHaveLength(1);
@@ -25,6 +29,7 @@ describe("StoryEngine", () => {
       session,
     );
 
+    expect(continuationTurn.session.turnId).toBe(2);
     expect(continuationTurn.responseText).toContain("glowing robot friend");
     expect(continuationTurn.session.storyParts).toHaveLength(2);
     expect(continuationTurn.session.isComplete).toBe(false);
@@ -35,6 +40,7 @@ describe("StoryEngine", () => {
       session,
     );
 
+    expect(finaleTurn.session.turnId).toBe(3);
     expect(finaleTurn.session.phase).toBe(StoryPhase.Completed);
     expect(finaleTurn.session.storyParts).toHaveLength(3);
     expect(finaleTurn.session.isComplete).toBe(true);

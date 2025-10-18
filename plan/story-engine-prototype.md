@@ -29,3 +29,7 @@
 - Implementations for the four nodes plus a `GraphRunner` in `packages/story-engine`.
 - Basic vitest coverage proving the happy-path flow from fresh session to completion across multiple user turns.
 - Documentation snippet appended to the main plan summarising the prototype capability and next enhancements (design-phase hooks, vocabulary branch, telemetry integration).
+
+## Session Lifecycle & Telemetry
+- Session lifecycle mirrors the Python helpers via `manageSessionLifecycle`, handling timeouts, turn counters, and story ID rotation.
+- Telemetry hooks surface structured events (`story_opening`, `story_continuation`, `story_completion`) through an injectable logger to prepare for analytics integration.
