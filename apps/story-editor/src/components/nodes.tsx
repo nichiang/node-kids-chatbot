@@ -3,22 +3,29 @@ import { Handle, Position } from "reactflow";
 import type { NodeProps } from "reactflow";
 import type { StoryEditorNodeType } from "../graphs/node-types";
 
-function BaseNode({ data, label }: { data: NodeProps["data"]; label: string }) {
+type NodeData = {
+  description?: string;
+  promptRef?: string;
+};
+
+type StoryNodeProps = NodeProps<NodeData> & { label: string };
+
+function BaseNode({ data, label, selected }: StoryNodeProps) {
   return (
-    <div className="story-node">
+    <div className="story-node" data-selected={selected}>
       <Handle type="target" position={Position.Left} isConnectable />
       <h4>{label}</h4>
       {data?.description && <p>{String(data.description)}</p>}
       {data?.promptRef && (
         <p className="prompt-ref">{String(data.promptRef)}</p>
       )}
-          <Handle type="source" position={Position.Right} isConnectable />
+      <Handle type="source" position={Position.Right} isConnectable />
     </div>
   );
 }
 
 function createNodeComponent(displayName: string) {
-  return memo<NodeProps>((props) => <BaseNode data={props.data} label={displayName} />);
+  return memo<NodeProps<NodeData>>((props) => (<BaseNode {...props} label={displayName} />));
 }
 
 const labels: Record<StoryEditorNodeType | "default", string> = {

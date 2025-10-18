@@ -1,4 +1,4 @@
-import ReactFlow, { Background, Controls, MiniMap, useReactFlow } from "reactflow";
+import ReactFlow, { Background, Controls, MiniMap, useReactFlow, applyNodeChanges, applyEdgeChanges } from "reactflow";
 import { useCallback } from "react";
 import { useStoryGraph } from "../state/use-story-graph";
 import { nodeTypes } from "./nodes";
@@ -8,8 +8,8 @@ import { useSelection } from "../state/use-selection";
 export function StoryGraphCanvas() {
   const graph = useStoryGraph((state) => state.graph);
   const setGraph = useStoryGraph((state) => state.setGraph);
+  const updateGraph = useStoryGraph((state) => state.updateGraph);
   const reactFlowInstance = useReactFlow();
-  const selectedNodeId = useSelection((state) => state.selectedNodeId);
   const setSelectedNodeId = useSelection((state) => state.setSelectedNodeId);
 
   const handleDragOver = useCallback((event: React.DragEvent) => {
@@ -45,6 +45,20 @@ export function StoryGraphCanvas() {
     [graph, reactFlowInstance, setGraph],
   );
 
+  const handleNodesChange = useCallback((changes) => {
+    updateGraph((current) => ({
+      ...current,
+      nodes: applyNodeChanges(changes, current.nodes),
+    }));
+  }, [updateGraph]);
+
+  const handleEdgesChange = useCallback((changes) => {
+    updateGraph((current) => ({
+      ...current,
+      edges: applyEdgeChanges(changes, current.edges),
+    }));
+  }, [updateGraph]);
+
   return (
     <section className="graph-canvas">
       <ReactFlow
@@ -52,11 +66,11 @@ export function StoryGraphCanvas() {
         edges={graph.edges}
         fitView
         nodeTypes={nodeTypes}
+        onNodesChange={handleNodesChange}
+        onEdgesChange={handleEdgesChange}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        onNodeClick={(_, node) => setSelectedNodeId(node.id)}
-        onPaneClick={() => setSelectedNodeId(undefined)}
-        selectedNodes={graph.nodes.filter((node) => node.id === selectedNodeId)}
+        onSelectionChange={(params) => setSelectedNodeId(params?.nodes?.[0]?.id)}
       >
         <MiniMap />
         <Controls />
