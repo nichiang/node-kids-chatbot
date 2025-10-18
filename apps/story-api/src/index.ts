@@ -1,28 +1,47 @@
+import Fastify from "fastify";
+import cors from "@fastify/cors";
 import { StoryEngine } from "@kids-chatbot/story-engine";
 import { createInitialSessionState } from "@kids-chatbot/story-types";
 
-async function bootstrap() {
+async function buildServer() {
+  const fastify = Fastify({
+    logger: true,
+  });
+
+  await fastify.register(cors, { origin: true });
+
   const engine = new StoryEngine();
-  let session = createInitialSessionState();
 
-  const opening = await engine.runTurn("Let's write a space story!", session);
-  console.log("Opening response:\n", opening.responseText);
+  fastify.get("/health", async () => ({ status: "ok", message: "Story API running" }));
 
-  session = opening.session;
-  const continuation = await engine.runTurn(
-    "Our heroes find a friendly robot.",
-    session,
-  );
-  console.log("Continuation response:\n", continuation.responseText);
+  fastify.post("/chat", async (request, reply) => {
+    const body: any = request.body ?? {};
+    const message: string = body.message ?? "";
+    const sessionData = body.sessionData ?? createInitialSessionState();
 
-  session = continuation.session;
-  const finale = await engine.runTurn(
-    "They share what they learned with everyone.",
-    session,
-  );
-  console.log("Finale response:\n", finale.responseText);
+    try {
+      const result = await engine.runTurn(message, sessionData);
+      return {
+        response: result.responseText,
+        sessionData: result.session,
+      };
+    } catch (error) {
+      request.log.error({ err: error }, "Story engine error");
+      reply.code(500);
+      return { error: "story_engine_error" };
+    }
+  });
+
+  return fastify;
 }
 
-bootstrap().catch((err) => {
-  console.error("Failed to run story API scaffold", err);
-});
+if (import.meta.url === `file://${process.argv[1]}`) {
+  buildServer()
+    .then((server) => server.listen({ port: 3000, host: "0.0.0.0" }))
+    .catch((err) => {
+      console.error("Failed to start server", err);
+      process.exit(1);
+    });
+}
+
+export { buildServer };

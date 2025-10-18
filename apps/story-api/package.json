@@ -6,12 +6,15 @@
   "main": "src/index.ts",
   "scripts": {
     "build": "tsc -b",
-    "dev": "ts-node-dev --respawn src/index.ts",
+    "dev": "tsx src/index.ts",
     "lint": "eslint \"src/**/*.ts\"",
     "test": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "start": "node dist/index.js"
   },
   "dependencies": {
-    "@kids-chatbot/story-engine": "0.1.0"
+    "@kids-chatbot/story-engine": "0.1.0",
+    "fastify": "^4.26.2",
+    "@fastify/cors": "^9.0.1"
   }
 }
