@@ -1,5 +1,6 @@
 # story-editor
 
-React-based node editor that will allow non-technical stakeholders to compose and test story flows.
+React-based node editor scaffold with React Flow.
 
-Scaffold includes placeholder components and shared package references; Vite configuration will be added in a future task.
+Currently includes a static node palette aligned with the story flow taxonomy and a demo graph canvas.
+Next steps: add drag-and-drop, node inspector, and live simulation against the story engine.

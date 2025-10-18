@@ -16,6 +16,7 @@
 - Provide LLM/provider adapters abstracted behind interfaces so story nodes can swap providers and support deterministic fixtures for testing.
 
 ## Story Editor UI
+- Drafted editor architecture plan covering React Flow integration and simulation hooks (see `plan/story-editor-plan.md`).
 - Build a React + TypeScript editor (Vite or Next.js) using React Flow (or similar) to author story graphs with node palettes reflecting the storywriting node types defined above.
 - Add property panels that let non-technical users configure prompts, content references, vocabulary settings, and branching logic; surface contextual guidance pulled from the shared content package.
 - Deliver simulation tooling limited to the story path: allow running sample conversations against the backend sandbox endpoint to visualize node transitions, session state mutations, and telemetry output.

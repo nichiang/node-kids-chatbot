@@ -8,13 +8,16 @@
     "dev": "vite",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "test": "vitest",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "start": "npm run dev"
   },
   "dependencies": {
     "@kids-chatbot/story-engine": "0.1.0",
     "@kids-chatbot/story-content": "0.1.0",
     "@kids-chatbot/story-types": "0.1.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "reactflow": "^11.10.0",
+    "zustand": "^4.4.0"
   }
 }
