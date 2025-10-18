@@ -42,6 +42,6 @@
 - [x] Implement drag/drop from palette with dynamic node creation.
 - [x] Add node selection + property inspector panel. (dragging persists via onNodesChange)
 - [x] Wire prompt/content pickers to `@kids-chatbot/story-content` data (includes prompt preview in inspector).
-- [ ] Persist graph state to local storage and enhance import/export validation.
+- [x] Persist graph state to local storage and enhance import/export validation.
 - [ ] Show session state and node highlighting during simulations.
 - [ ] Document editor workflows (how to create a new flow, run simulations, export). 

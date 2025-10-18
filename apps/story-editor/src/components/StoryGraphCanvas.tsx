@@ -8,7 +8,7 @@ import ReactFlow, {
   NodeChange,
   EdgeChange,
 } from "reactflow";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useStoryGraph } from "../state/use-story-graph";
 import { nodeTypes } from "./nodes";
 import type {
@@ -22,7 +22,10 @@ export function StoryGraphCanvas() {
   const graph = useStoryGraph((state) => state.graph);
   const setGraph = useStoryGraph((state) => state.setGraph);
   const updateGraph = useStoryGraph((state) => state.updateGraph);
+  const removeNodes = useStoryGraph((state) => state.removeNodes);
+  const removeEdges = useStoryGraph((state) => state.removeEdges);
   const reactFlowInstance = useReactFlow();
+  const selectedNodeId = useSelection((state) => state.selectedNodeId);
   const setSelectedNodeId = useSelection((state) => state.setSelectedNodeId);
 
   const handleDragOver = useCallback((event: React.DragEvent) => {
@@ -89,6 +92,34 @@ export function StoryGraphCanvas() {
     },
     [updateGraph],
   );
+
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if (event.key === "Delete" || event.key === "Backspace") {
+      const selectedNodes = reactFlowInstance
+        .getNodes()
+        .filter((node) => node.selected)
+        .map((node) => node.id);
+      const selectedEdges = reactFlowInstance
+        .getEdges()
+        .filter((edge) => edge.selected)
+        .map((edge) => edge.id);
+
+      if (selectedNodes.length > 0) {
+        removeNodes(selectedNodes);
+        setSelectedNodeId(undefined);
+      }
+      if (selectedEdges.length > 0) {
+        removeEdges(selectedEdges);
+      }
+    }
+  }, [reactFlowInstance, removeEdges, removeNodes, setSelectedNodeId]);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleKeyDown]);
 
   return (
     <section className="graph-canvas">
