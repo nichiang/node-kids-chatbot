@@ -90,3 +90,37 @@ export function renderGrammarFeedbackPrompt(userText: string): string {
 }
 
 export type { StoryPromptKey };
+
+export function listStoryPromptKeys(): Array<{ id: string; variables: string[] }> {
+  return Object.entries(storyPrompts)
+    .filter(([key, value]) => key !== "description" && value && typeof value === "object" && "prompt_template" in value)
+    .map(([key, value]) => ({
+      id: key,
+      variables: (value as TemplateDefinition).variables ?? [],
+    }));
+}
+
+export function listVocabularyPromptKeys(): Array<{ id: string; variables: string[] }> {
+  return Object.entries(vocabularyPrompts)
+    .filter(([_, value]) => value && typeof value === "object" && "prompt_template" in value)
+    .map(([key, value]) => ({
+      id: key,
+      variables: (value as TemplateDefinition).variables ?? [],
+    }));
+}
+
+export function getStoryPrompt(id: string): TemplateDefinition | undefined {
+  const entry = storyPrompts[id as keyof typeof storyPrompts];
+  if (entry && typeof entry === "object" && "prompt_template" in entry) {
+    return entry as TemplateDefinition;
+  }
+  return undefined;
+}
+
+export function getVocabularyPrompt(id: string): TemplateDefinition | undefined {
+  const entry = vocabularyPrompts[id as keyof typeof vocabularyPrompts];
+  if (entry && typeof entry === "object" && "prompt_template" in entry) {
+    return entry as TemplateDefinition;
+  }
+  return undefined;
+}
