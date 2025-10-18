@@ -33,8 +33,8 @@
    - Build simple Node CLI (or reuse existing script) to post user messages to `/chat` and print replies.
 
 ## Todo
-- [ ] Scaffold Fastify server with `/chat` and `/health` routes.
-- [ ] Implement in-memory session store.
-- [ ] Wire session store + engine + telemetry logger.
-- [ ] Create CLI script to interact with the API.
+- [x] Scaffold Fastify server with `/chat` and `/health` routes.
+- [x] Implement in-memory session store.
+- [x] Wire session store + engine + telemetry logger.
+- [x] Create CLI script to interact with the API.
 - [ ] Add basic integration tests (optional).
