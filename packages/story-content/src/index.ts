@@ -1,7 +1,7 @@
-import storyPrompts from "../data/story-prompts.json";
-import botResponses from "../data/bot-responses.json";
-import topicConfig from "../data/topics.json";
-import vocabularyPrompts from "../data/vocabulary-prompts.json";
+import storyPrompts from "../data/story-prompts.json" assert { type: "json" };
+import botResponses from "../data/bot-responses.json" assert { type: "json" };
+import topicConfig from "../data/topics.json" assert { type: "json" };
+import vocabularyPrompts from "../data/vocabulary-prompts.json" assert { type: "json" };
 
 interface TemplateDefinition {
   prompt_template: string;
@@ -18,12 +18,12 @@ function sanitizeInput(value: string): string {
   return value.trim().replace(/\s+/g, " ");
 }
 
-export function buildStoryOpening(topic: string): string {
+export function renderStoryOpening(topic: string): string {
   const prompt = storyPrompts.story_opening as TemplateDefinition;
   return applyTemplate(prompt.prompt_template, { topic: sanitizeInput(topic) });
 }
 
-export function buildStoryContinuation(topic: string, context: string): string {
+export function renderStoryContinuation(topic: string, context: string): string {
   const prompt = storyPrompts.story_continuation as TemplateDefinition;
   return applyTemplate(prompt.prompt_template, {
     topic: sanitizeInput(topic),
@@ -31,7 +31,7 @@ export function buildStoryContinuation(topic: string, context: string): string {
   });
 }
 
-export function buildStoryFinale(topic: string, resolutionIdea: string): string {
+export function renderStoryFinale(topic: string, resolutionIdea: string): string {
   const prompt = storyPrompts.story_finale as TemplateDefinition;
   return applyTemplate(prompt.prompt_template, {
     topic: sanitizeInput(topic),
@@ -39,7 +39,7 @@ export function buildStoryFinale(topic: string, resolutionIdea: string): string 
   });
 }
 
-export function getBotResponse(key: string): string | undefined {
+export function lookupBotResponse(key: string): string | undefined {
   const parts = key.split(".");
   let current: any = botResponses;
   for (const part of parts) {
@@ -67,12 +67,11 @@ export function getThemeForTopic(topic?: string): string {
   if (!topic) {
     return topicConfig.default_theme;
   }
-  return (
-    topicConfig.theme_mapping[topic.toLowerCase()] ?? topicConfig.default_theme
-  );
+  const themeMapping = topicConfig.theme_mapping as Record<string, string>;
+  return themeMapping[topic.toLowerCase()] ?? topicConfig.default_theme;
 }
 
-export function getVocabularyQuestionPrompt(
+export function renderVocabularyQuestionPrompt(
   word: string,
   sentenceContext: string,
 ): string {
@@ -83,7 +82,7 @@ export function getVocabularyQuestionPrompt(
   });
 }
 
-export function getGrammarFeedbackPrompt(userText: string): string {
+export function renderGrammarFeedbackPrompt(userText: string): string {
   const template = vocabularyPrompts.grammar_feedback as TemplateDefinition;
   return applyTemplate(template.prompt_template, {
     user_text: sanitizeInput(userText),

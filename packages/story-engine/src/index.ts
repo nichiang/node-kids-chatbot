@@ -8,9 +8,9 @@ import {
 } from "@kids-chatbot/story-types";
 import {
   detectTopicFromMessage,
-  buildStoryOpening,
-  buildStoryContinuation,
-  buildStoryFinale,
+  renderStoryOpening,
+  renderStoryContinuation,
+  renderStoryFinale,
 } from "@kids-chatbot/story-content";
 import {
   manageSessionLifecycle,
@@ -51,7 +51,7 @@ const storyOpeningNode: StoryNode = {
     if (!session.topic) {
       throw new Error("Cannot build opening without a topic");
     }
-    const openingText = buildStoryOpening(session.topic);
+    const openingText = renderStoryOpening(session.topic);
     const updatedSession: StorySessionState = {
       ...session,
       phase: StoryPhase.Writing,
@@ -74,7 +74,7 @@ const storyContinuationNode: StoryNode = {
       throw new Error("Cannot continue story without a topic");
     }
     const contextWindow = session.storyParts.slice(-3).join(' ');
-    const continuation = buildStoryContinuation(session.topic, contextWindow);
+    const continuation = renderStoryContinuation(session.topic, contextWindow);
     const updatedSession: StorySessionState = {
       ...session,
       storyParts: [...session.storyParts, continuation],
@@ -96,7 +96,7 @@ const storyCompletionNode: StoryNode = {
     if (!session.topic) {
       throw new Error("Cannot complete story without a topic");
     }
-    const finale = buildStoryFinale(session.topic, userInput);
+    const finale = renderStoryFinale(session.topic, userInput);
     const updatedSession: StorySessionState = {
       ...session,
       storyParts: [...session.storyParts, finale],

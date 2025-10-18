@@ -1,7 +1,7 @@
 # End-to-End LLM Integration Plan
 
 ## 1. Content & Schema Completion
-- Hardcode the essential prompts, bot responses, and topic metadata for the MVP while shaping APIs to swap in editor-managed content later.
+- Hardcode the essential prompts, bot responses, and topic metadata for the MVP while shaping APIs to swap in editor-managed content later (data stored under `packages/story-content/data/` with template + variable metadata).
 - Outline JSON schema contracts even if validation is deferred; keep loader signatures compatible with future editable assets.
 - Ensure `@kids-chatbot/story-content` exposes typed accessors that mirror what the node editor will need so content swapping stays seamless.
 

@@ -1,5 +1,12 @@
 # @kids-chatbot/story-content
 
-Shared content loaders, JSON schemas, and prompt templates for the storywriting flow.
+Shared prompt/content accessors for the storywriting flow.
 
-This package will ingest the migrated content from the Python backend and expose strongly typed accessors for use by both the engine and the editor.
+## Data Layout
+- JSON files live under `data/` (e.g., `story-prompts.json`, `bot-responses.json`, `topics.json`, `vocabulary-prompts.json`).
+- TypeScript loaders in `src/index.ts` import those files (using `assert { type: "json" }`) and expose helper functions such as `renderStoryOpening` or `lookupBotResponse`.
+- The structure is intentionally editor-friendly: each JSON entry contains a `prompt_template` plus a `variables` list, making it easy to surface in property panels later.
+
+## Next Steps
+- Add JSON Schemas to validate content at build/test time.
+- Expand the data set with design-phase prompts, conflict guidance, and fun-facts once the engine requires them.
