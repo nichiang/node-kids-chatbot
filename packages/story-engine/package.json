@@ -12,7 +12,9 @@
   },
   "dependencies": {
     "@kids-chatbot/story-content": "0.1.0",
-    "@kids-chatbot/story-types": "0.1.0"
+    "@kids-chatbot/story-types": "0.1.0",
+    "dotenv": "^16.4.5",
+    "openai": "^4.56.0"
   },
   "exports": {
     ".": {

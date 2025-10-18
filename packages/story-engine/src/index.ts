@@ -1,5 +1,4 @@
 import {
-  StoryNode,
   StoryPhase,
   StorySessionState,
   NodeExecutionContext,
@@ -12,21 +11,24 @@ import {
   renderStoryContinuation,
   renderStoryFinale,
 } from "@kids-chatbot/story-content";
-import {
-  manageSessionLifecycle,
-  cloneSessionState,
-} from "./session";
+import { manageSessionLifecycle, cloneSessionState } from "./session";
 import {
   TelemetryEvent,
   TelemetryLogger,
   createNoopTelemetryLogger,
 } from "./telemetry";
+import {
+  LLMClient,
+  LLMProvider,
+  LLMCallTiming,
+} from "./llm";
 
 interface StoryEngineOptions {
   telemetryLogger?: TelemetryLogger;
+  llmProvider?: LLMClient;
 }
 
-const topicClassifierNode: StoryNode = {
+const topicClassifierNode = {
   id: "topic-classifier",
   phase: StoryPhase.Topic,
   execute(context: NodeExecutionContext) {
@@ -43,80 +45,13 @@ const topicClassifierNode: StoryNode = {
   },
 };
 
-const storyOpeningNode: StoryNode = {
-  id: "story-opening",
-  phase: StoryPhase.Topic,
-  execute(context: NodeExecutionContext) {
-    const { session } = context;
-    if (!session.topic) {
-      throw new Error("Cannot build opening without a topic");
-    }
-    const openingText = renderStoryOpening(session.topic);
-    const updatedSession: StorySessionState = {
-      ...session,
-      phase: StoryPhase.Writing,
-      storyParts: [...session.storyParts, openingText],
-      turn: session.turn + 1,
-    };
-    return {
-      session: updatedSession,
-      responseText: openingText,
-    };
-  },
-};
-
-const storyContinuationNode: StoryNode = {
-  id: "story-continuation",
-  phase: StoryPhase.Writing,
-  execute(context: NodeExecutionContext) {
-    const { session, userInput } = context;
-    if (!session.topic) {
-      throw new Error("Cannot continue story without a topic");
-    }
-    const contextWindow = session.storyParts.slice(-3).join(' ');
-    const continuation = renderStoryContinuation(session.topic, contextWindow);
-    const updatedSession: StorySessionState = {
-      ...session,
-      storyParts: [...session.storyParts, continuation],
-      turn: session.turn + 1,
-    };
-
-    return {
-      session: updatedSession,
-      responseText: continuation,
-    };
-  },
-};
-
-const storyCompletionNode: StoryNode = {
-  id: "story-completion",
-  phase: StoryPhase.Writing,
-  execute(context: NodeExecutionContext) {
-    const { session, userInput } = context;
-    if (!session.topic) {
-      throw new Error("Cannot complete story without a topic");
-    }
-    const finale = renderStoryFinale(session.topic, userInput);
-    const updatedSession: StorySessionState = {
-      ...session,
-      storyParts: [...session.storyParts, finale],
-      turn: session.turn + 1,
-      phase: StoryPhase.Completed,
-      isComplete: true,
-    };
-
-    return {
-      session: updatedSession,
-      responseText: finale,
-    };
-  },
-};
-
 export class StoryEngine {
   private telemetry: TelemetryLogger;
+  private llm: LLMClient;
 
   constructor(options: StoryEngineOptions = {}) {
     this.telemetry = options.telemetryLogger ?? createNoopTelemetryLogger();
+    this.llm = options.llmProvider ?? new LLMProvider();
   }
 
   async runTurn(
@@ -153,53 +88,126 @@ export class StoryEngine {
   private async handleTopicPhase(
     context: NodeExecutionContext,
   ): Promise<StoryTurnOutput> {
-    const topicResult = await topicClassifierNode.execute(context);
-    const openingResult = await storyOpeningNode.execute({
-      session: topicResult.session,
-      userInput: context.userInput,
+    const topicResult = topicClassifierNode.execute(context);
+    const topicSession = topicResult.session;
+    if (!topicSession.topic) {
+      throw new Error("Topic detection failed");
+    }
+
+    const promptText = renderStoryOpening(topicSession.topic);
+    const systemPrompt = await this.llm.getStorySystemPrompt();
+    const llmResult = await this.llm.generateStoryResponse({
+      prompt: promptText,
+      systemPrompt,
     });
 
-    this.telemetry.log(createTelemetryEvent("story_opening", openingResult));
+    const updatedSession: StorySessionState = {
+      ...topicSession,
+      phase: StoryPhase.Writing,
+      storyParts: [...topicSession.storyParts, llmResult.text],
+      turn: topicSession.turn + 1,
+    };
+
+    this.telemetry.log(
+      createTelemetryEvent(
+        "story_opening",
+        updatedSession,
+        llmResult.text,
+        llmResult.timing,
+      ),
+    );
 
     return {
-      responseText: openingResult.responseText ?? "",
-      session: openingResult.session,
+      responseText: llmResult.text,
+      session: updatedSession,
     };
   }
 
   private async handleWritingPhase(
     context: NodeExecutionContext,
   ): Promise<StoryTurnOutput> {
-    const { session } = context;
+    const { session, userInput } = context;
+
+    if (!session.topic) {
+      throw new Error("Cannot continue story without a topic");
+    }
 
     if (session.isComplete) {
       return this.respondStoryCompleted(session);
     }
 
     if (session.storyParts.length === 1) {
-      const continuationResult = await storyContinuationNode.execute(context);
-      this.telemetry.log(createTelemetryEvent("story_continuation", continuationResult));
+      const promptText = renderStoryContinuation(
+        session.topic,
+        session.storyParts.slice(-3).join(" "),
+      );
+      const llmResult = await this.llm.generateStoryResponse({
+        prompt: promptText,
+        systemPrompt: await this.llm.getStorySystemPrompt(),
+      });
+
+      const updatedSession: StorySessionState = {
+        ...session,
+        storyParts: [...session.storyParts, llmResult.text],
+        turn: session.turn + 1,
+      };
+
+      this.telemetry.log(
+        createTelemetryEvent(
+          "story_continuation",
+          updatedSession,
+          llmResult.text,
+          llmResult.timing,
+        ),
+      );
+
       return {
-        responseText: continuationResult.responseText ?? "",
-        session: continuationResult.session,
+        responseText: llmResult.text,
+        session: updatedSession,
       };
     }
 
-    if (session.storyParts.length === 2) {
-      const completionResult = await storyCompletionNode.execute(context);
-      this.telemetry.log(createTelemetryEvent("story_completion", completionResult));
-      return {
-        responseText: completionResult.responseText ?? "",
-        session: completionResult.session,
-      };
-    }
+    const promptText = renderStoryFinale(session.topic, userInput);
+    const llmResult = await this.llm.generateStoryResponse({
+      prompt: promptText,
+      systemPrompt: await this.llm.getStorySystemPrompt(),
+    });
 
-    return this.respondStoryCompleted(session);
+    const updatedSession: StorySessionState = {
+      ...session,
+      storyParts: [...session.storyParts, llmResult.text],
+      turn: session.turn + 1,
+      phase: StoryPhase.Completed,
+      isComplete: true,
+    };
+
+    this.telemetry.log(
+      createTelemetryEvent(
+        "story_completion",
+        updatedSession,
+        llmResult.text,
+        llmResult.timing,
+      ),
+    );
+
+    return {
+      responseText: llmResult.text,
+      session: updatedSession,
+    };
   }
 
   private respondStoryCompleted(
     session: StorySessionState,
   ): StoryTurnOutput {
+    this.telemetry.log(
+      createTelemetryEvent(
+        "story_completed",
+        session,
+        "Our story is already complete! Let's start a new adventure next time.",
+        { type: "story_completed", durationMs: 0 },
+      ),
+    );
+
     return {
       responseText:
         "Our story is already complete! Let's start a new adventure next time.",
@@ -210,27 +218,25 @@ export class StoryEngine {
 
 export const nodes = {
   topicClassifierNode,
-  storyOpeningNode,
-  storyContinuationNode,
-  storyCompletionNode,
 };
 
 function createTelemetryEvent(
   eventType: TelemetryEvent["type"],
-  result: { session: StorySessionState; responseText?: string },
+  session: StorySessionState,
+  responseText: string,
+  timing: LLMCallTiming,
 ): TelemetryEvent {
   return {
     type: eventType,
-    sessionId: result.session.sessionId ?? "unknown",
-    storyId: result.session.currentStoryId,
+    sessionId: session.sessionId ?? "unknown",
+    storyId: session.currentStoryId,
     timestamp: new Date(),
     payload: {
-      responseText: result.responseText,
-      storyLength: result.session.storyParts.length,
-      phase: result.session.phase,
+      responseText,
+      storyLength: session.storyParts.length,
+      phase: session.phase,
+      llm_duration_ms: timing.durationMs,
+      ...(timing.error ? { llm_error: timing.error } : {}),
     },
   };
 }
-
-export * from "./session";
-export * from "./telemetry";
