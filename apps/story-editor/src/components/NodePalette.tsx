@@ -49,7 +49,7 @@ export function NodePalette() {
           <h3>{phase}</h3>
           <ul>
             {nodeIds.map((nodeId) => (
-              <li key={nodeId} data-node-type={nodeId}>
+              <li key={nodeId} data-node-type={nodeId} draggable onDragStart={(event) => handleDragStart(event, nodeId)}>
                 {toDisplayName(nodeId)}
               </li>
             ))}
@@ -57,6 +57,7 @@ export function NodePalette() {
         </section>
       ))}
     </aside>
+
   );
 }
 
@@ -65,4 +66,9 @@ function toDisplayName(nodeId: StoryEditorNodeType): string {
     .split("-")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function handleDragStart(event: React.DragEvent<HTMLLIElement>, nodeType: StoryEditorNodeType) {
+  event.dataTransfer.setData("application/reactflow", nodeType);
+  event.dataTransfer.effectAllowed = "move";
 }

@@ -6,13 +6,13 @@ import type { StoryEditorNodeType } from "../graphs/node-types";
 function BaseNode({ data, label }: { data: NodeProps["data"]; label: string }) {
   return (
     <div className="story-node">
-      <Handle type="target" position={Position.Left} />
+      <Handle type="target" position={Position.Left} isConnectable />
       <h4>{label}</h4>
       {data?.description && <p>{String(data.description)}</p>}
       {data?.promptRef && (
         <p className="prompt-ref">{String(data.promptRef)}</p>
       )}
-          <Handle type="source" position={Position.Right} />
+          <Handle type="source" position={Position.Right} isConnectable />
     </div>
   );
 }
