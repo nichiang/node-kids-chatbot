@@ -1,8 +1,22 @@
 import { config as loadEnv } from "dotenv";
 import OpenAI from "openai";
 import { performance } from "perf_hooks";
+import { fileURLToPath } from "url";
+import path from "path";
+import fs from "fs";
 
-loadEnv();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const candidateEnvPaths = [
+  path.resolve(process.cwd(), ".env"),
+  path.resolve(__dirname, "../../.env"),
+  path.resolve(__dirname, "../../../.env"),
+];
+for (const envPath of candidateEnvPaths) {
+  if (fs.existsSync(envPath)) {
+    loadEnv({ path: envPath, override: true });
+  }
+}
 
 export interface LLMCallTiming {
   type: string;
@@ -81,7 +95,7 @@ export class LLMProvider implements LLMClient {
     }
 
     if (!text) {
-      text = this.fallbackStoryResponse(prompt);
+      throw new Error(error ?? 'LLM call failed without response');
     }
 
     const timing = this.createTiming(
@@ -106,19 +120,5 @@ export class LLMProvider implements LLMClient {
       durationMs: Math.round(durationMs * 100) / 100,
       ...(error ? { error } : {}),
     };
-  }
-
-  private fallbackStoryResponse(prompt: string): string {
-    const promptLower = prompt.toLowerCase();
-
-    if (promptLower.includes("space")) {
-      return "🚀 Space adventures are incredible! Captain Zoe blasts off toward a mysterious planet filled with shimmering lights. What should happen next in this cosmic mission?";
-    }
-
-    if (promptLower.includes("dragon") || promptLower.includes("magic")) {
-      return "🏰 A curious wizard cracks open a glowing book and finds a friendly dragon waiting to help. How will their magical adventure begin?";
-    }
-
-    return "Let's kick off our story with a burst of imagination! Tell me what our hero should do first.";
   }
 }
