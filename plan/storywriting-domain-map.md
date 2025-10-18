@@ -48,58 +48,60 @@
    - While awaiting confirmation, positive intents reset session for a new topic (`reset_session_for_new_story`) and spin a fresh opening via `generate_initial_story_for_topic` (reuses initialization flow). Negative intents send goodbye and keep session idle.
    - Without confirmation flag, bot checks for spontaneous topic change suggestion and restarts when appropriate; else returns standard ending message.
 
-## Node Taxonomy (initial storywriting set)
+## Node Palette by Story Phase (non-technical naming)
 
-### Routing & Control Nodes
-- **`SessionBootstrap`** – ensure session IDs/turn counters, emit normalized `SessionContext` object. *Inputs*: raw request. *Outputs*: updated session state.
-- **`VocabularyCommandSwitch`** – branch when message equals `start/next/finish_vocabulary`; routes to vocabulary subgraph.
-- **`ConversationPhaseRouter`** – state machine node mirroring current dispatcher logic to select between Topic Init, Design, Writing, Completed handlers.
-- **`ConditionBranch`** – reusable boolean branch (e.g., `should_trigger_design`, `should_end_story`, `awaiting_confirmation`).
+### Phase 1 · Topic Discovery & Kickoff
+- **Topic Listener** – picks up the child’s chosen topic or key words; powers theme selection UI (`utils.extract_topic_from_message`).
+- **Story Spark** – runs the story opening prompt and returns the first paragraph with suggested bold vocabulary (`storywriting_prompts.story_generation.story_opening`).
+- **Theme Whisperer** – recommends the visual theme for the UI based on the topic (`content/theme-config.json`).
 
-### Content & Prompt Nodes
-- **`TopicExtractor`** – deterministic keyword extractor returning topic + theme ID.
-- **`PromptTemplateLoader`** – fetch prompt strings or structured templates from shared content package (`storywriting_prompts`, `design_templates`, etc.).
-- **`PromptComposer`** – assemble final prompt strings from templates plus runtime data (topic, story window, design summary, conflict guidance).
+### Phase 2 · Character & World Design
+- **Design Doorway** – checks the opening story for unnamed characters/locations and invites the child into design mode.
+- **Name It!** – friendly naming prompt for a new character or place (`design_templates.<type>.naming`).
+- **Character Spotlight** – ask-for-details card using character aspect prompts (appearance, personality, dreams).
+- **Setting Spotlight** – same as above but for locations (sights, sounds, special details).
+- **Design Wrap** – sends a celebratory message, saves design choices, and hands control back to the story flow with a tailored continuation prompt.
 
-### LLM Interaction Nodes
-- **`LLMStoryOpening`**, **`LLMStoryContinuation`**, **`LLMStoryEnding`** – story text generation; return rich payload `{story, entities, vocab, latency}`.
-- **`LLMDesignContinuation`** – used after design inputs to weave child contributions back into narrative.
-- **`LLMGrammarFeedback`** – optional grammar coaching text.
-- **`LLMNarrativeAssessment`** – analyzes recent story arcs for phase/conflict guidance.
-- **`LLMVocabularyQuestion`** – generates multiple-choice question JSON for a word.
+### Phase 3 · Story Building Loop
+- **Child Turn Capture** – stores the child’s text verbatim in the story timeline.
+- **Writing Coach** – optional grammar/growth feedback bubble (`storywriting_prompts.grammar_feedback`).
+- **Story Compass** – periodic narrative check-in that labels the current phase and conflict (`storywriting_prompts.story_assessment.arc_analysis`).
+- **Conflict Booster** – adds conflict guidance when the story feels flat (`storywriting_prompts.narrative_enhancement.conflict_scenarios`).
+- **Story Builder** – main continuation prompt that stitches the next paragraph together using the latest context and vocab.
+- **Story Vault** – appends the bot paragraph, tracks vocab words, updates progress counters.
 
-### Post-Processing Nodes
-- **`StoryParser`** – convert LLM JSON to structured entities, surface parse errors.
-- **`DesignDecisionEvaluator`** – evaluate parsed entities against rules to decide design branch.
-- **`ConflictGuidanceComposer`** – optional step to embed conflict instructions when assessment lacks conflict.
-- **`VocabularySelector`** – pick candidate words (from story content or curated lists) ensuring no duplicates.
+### Phase 4 · Story Wrap-Up & Encore
+- **Ending Decision** – reviews pacing metrics to decide if it’s time for a finale (`prompt_manager.should_end_story_intelligently`).
+- **Story Finale** – produces the closing paragraph with “The end!” and flags the story as complete.
+- **Encore Invitation** – sends the friendly follow-up message about starting another adventure (`storywriting_prompts.completion_prompts.new_story_invitation`).
+- **Fresh Start Prep** – clears story-specific state while keeping the same session for the next topic.
 
-### Session Mutation Nodes
-- **`SessionTopicInitializer`** – set topic, reset/prime counters, add opening text.
-- **`StoryAppender`** – append bot/user turns to `storyParts`, increment steps, set `isComplete` when flagged.
-- **`DesignStateManager`** – manage lifecycle of design entity (initialize, rotate aspects, finalize, persist overrides).
-- **`VocabularyStateManager`** – update asked words, question counts, mark completion.
-- **`NarrativeAssessmentUpdater`** – persist assessment metrics and conflict metadata.
-- **`SessionResetForNewStory`** – clear story-specific fields while preserving identifiers.
+### Phase 5 · Vocabulary Quest
+- **Launch Vocabulary Quest** – introduces the quiz and generates the first question from recent story words.
+- **Next Challenge** – fetches the next word either from story content or curated backups.
+- **Quest Complete** – thanks the learner, marks the vocabulary phase as done, and toggles the “awaiting new story” flag.
 
-### Telemetry & Logging Nodes
-- **`EducationalEventLogger`** – wrap calls to latency logger with consistent payloads.
-- **`VocabularySnapshotLogger`** – capture vocabulary state for observability.
-- **`LatencyCollector`** – gather LLM call timings for downstream analytics.
+### Always-On Helpers
+- **Session Keeper** – maintains session IDs, story IDs, and turn counters.
+- **Learning Log** – wraps latency + educational telemetry events for any LLM call.
+- **Vocabulary Monitor** – keeps the running list of asked/available vocab words for logging and quiz generation.
+- **Response Builder** – assembles the final payload for the frontend (story text, design card, vocab question, theme hint).
 
-### Output Nodes
-- **`ChatResponseBuilder`** – construct API payload (`response`, `sessionData`, optional `designPrompt`, `vocabQuestion`, `suggestedTheme`).
-- **`DesignPromptEmitter`** – package `DesignPrompt` UI data without story text mutation.
-
+Each node name mirrors the language a facilitator would expect inside the visual editor, while the description links the node to its current Python implementation and prompt assets.
 ## Suggested Graph Skeleton (happy path)
-1. `SessionBootstrap` → `VocabularyCommandSwitch`.
-2. `ConversationPhaseRouter` → (Topic Init | Design Loop | Writing Loop | Completed Handler).
-3. **Topic Init**: `TopicExtractor` → `PromptTemplateLoader` → `LLMStoryOpening` → `StoryParser` → `DesignDecisionEvaluator` → (`DesignStateManager` branch or `StoryAppender`).
-4. **Writing Loop**: `StoryAppender` (user turn) → optional `LLMGrammarFeedback` → conditional `LLMNarrativeAssessment` → `PromptComposer` → `LLMStoryContinuation` → `StoryAppender` (bot turn) → `EducationalEventLogger` → `ConditionBranch(should_end_story)`.
-5. **Completion Path**: when story ends, push `VocabularyStateManager`/`EducationalEventLogger` nodes, then `ChatResponseBuilder` with completion messaging.
-6. **Vocabulary Subgraph**: `VocabularySelector` → `LLMVocabularyQuestion` → `VocabularyStateManager` → `EducationalEventLogger` → `ChatResponseBuilder`.
-7. **Restart Path**: `ConditionBranch(awaiting_confirmation)` → (`SessionResetForNewStory` → return to Topic Init) or `ChatResponseBuilder` for goodbye message.
-
+1. **Session Keeper** → **Vocabulary Monitor** → **Learning Log** (baseline nodes run on every turn).
+2. **Topic Listener** → **Story Spark** → **Theme Whisperer**.
+3. **Design Doorway** decides whether to branch into Phase 2:
+   - If yes: **Name It!** → (**Character Spotlight**/**Setting Spotlight** as needed) → **Design Wrap** → back to Phase 3.
+   - If no: continue to Phase 3 directly.
+4. **Child Turn Capture** → optional **Writing Coach**.
+5. Every few turns: **Story Compass**; if narrative feels flat, insert **Conflict Booster** guidance before the next prompt.
+6. **Story Builder** → **Story Vault** (stores paragraph, updates vocab/theme info).
+7. **Ending Decision** evaluates whether to finish:
+   - If true: **Story Finale** → **Launch Vocabulary Quest**.
+   - If false: loop back to **Child Turn Capture** for the next exchange.
+8. Vocabulary path: **Next Challenge** (repeat up to max questions) → **Quest Complete**.
+9. Post-quiz: **Encore Invitation** asks about another story. Positive replies trigger **Fresh Start Prep** and return to Step 2.
 ## Open Questions / Assumptions
 - Legacy fun-facts fields remain untouched but must stay on the shared schema for compatibility.
 - Conflict scale (`conflictScale`) is currently only set in PromptManager guidance; confirm whether additional detection is needed in the node graph.
