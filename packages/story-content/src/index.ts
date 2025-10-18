@@ -1,88 +1,93 @@
-const PROMPT_LIBRARY = {
-  "story.opening": {
-    id: "story.opening",
-    description: "Opening paragraph template for the placeholder story engine",
-    template:
-      "Let's imagine a {topic} adventure! Our story begins with a burst of curiosity and a dash of courage.",
-  },
-  "story.continuation": {
-    id: "story.continuation",
-    description: "Continuation template that stitches in the learner's latest idea",
-    template:
-      "Building on the excitement, {userInput} inspires our heroes to explore even more of the {topic} world.",
-  },
-  "story.finale": {
-    id: "story.finale",
-    description: "Closing paragraph template that wraps up the adventure",
-    template:
-      "In the final moments, {resolution}, and the {topic} adventure ends on a joyful note. The end!",
-  },
-} as const;
+import storyPrompts from "../data/story-prompts.json";
+import botResponses from "../data/bot-responses.json";
+import topicConfig from "../data/topics.json";
+import vocabularyPrompts from "../data/vocabulary-prompts.json";
 
-const TOPIC_KEYWORDS: Record<string, string[]> = {
-  space: ["space", "planet", "rocket", "astronaut", "galaxy"],
-  animals: ["animal", "zoo", "creature", "lion", "dog", "cat"],
-  fantasy: ["dragon", "wizard", "magic", "castle", "fairy"],
-  ocean: ["ocean", "sea", "wave", "fish", "dolphin"],
-  sports: ["sport", "soccer", "football", "basketball", "game"],
-};
-
-export interface PromptAsset {
-  id: string;
-  description: string;
-  template: string;
+interface TemplateDefinition {
+  prompt_template: string;
+  variables: string[];
 }
 
-export function loadPromptAsset(id: keyof typeof PROMPT_LIBRARY): PromptAsset {
-  return PROMPT_LIBRARY[id];
+type StoryPromptKey = keyof typeof storyPrompts;
+
+function applyTemplate(template: string, values: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (_, key: string) => values[key] ?? `{${key}}`);
+}
+
+function sanitizeInput(value: string): string {
+  return value.trim().replace(/\s+/g, " ");
+}
+
+export function buildStoryOpening(topic: string): string {
+  const prompt = storyPrompts.story_opening as TemplateDefinition;
+  return applyTemplate(prompt.prompt_template, { topic: sanitizeInput(topic) });
+}
+
+export function buildStoryContinuation(topic: string, context: string): string {
+  const prompt = storyPrompts.story_continuation as TemplateDefinition;
+  return applyTemplate(prompt.prompt_template, {
+    topic: sanitizeInput(topic),
+    context: sanitizeInput(context),
+  });
+}
+
+export function buildStoryFinale(topic: string, resolutionIdea: string): string {
+  const prompt = storyPrompts.story_finale as TemplateDefinition;
+  return applyTemplate(prompt.prompt_template, {
+    topic: sanitizeInput(topic),
+    resolution: sanitizeInput(resolutionIdea) || "our heroes share what they learned",
+  });
+}
+
+export function getBotResponse(key: string): string | undefined {
+  const parts = key.split(".");
+  let current: any = botResponses;
+  for (const part of parts) {
+    if (current && typeof current === "object" && part in current) {
+      current = current[part];
+    } else {
+      return undefined;
+    }
+  }
+  return typeof current === "string" ? current : undefined;
 }
 
 export function detectTopicFromMessage(message: string): string {
   const normalized = message.toLowerCase();
-  for (const [topic, keywords] of Object.entries(TOPIC_KEYWORDS)) {
+  for (const [topic, keywords] of Object.entries(topicConfig.topic_keywords)) {
     if (keywords.some((keyword) => normalized.includes(keyword))) {
       return topic;
     }
   }
-  const firstWord = normalized.split(/\s+/)[0];
-  return firstWord || "adventure";
+  const fallback = normalized.split(/\s+/)[0];
+  return fallback || "adventure";
 }
 
 export function getThemeForTopic(topic?: string): string {
   if (!topic) {
-    return "theme-adventure";
+    return topicConfig.default_theme;
   }
-  return `theme-${topic.toLowerCase()}`;
+  return (
+    topicConfig.theme_mapping[topic.toLowerCase()] ?? topicConfig.default_theme
+  );
 }
 
-export function buildStoryOpening(topic: string): string {
-  const asset = loadPromptAsset("story.opening");
-  return asset.template.replace("{topic}", topic);
-}
-
-export function buildStoryContinuation(
-  topic: string,
-  userInput: string,
+export function getVocabularyQuestionPrompt(
+  word: string,
+  sentenceContext: string,
 ): string {
-  const asset = loadPromptAsset("story.continuation");
-  return asset.template
-    .replace("{topic}", topic)
-    .replace("{userInput}", sanitizeUserInput(userInput));
+  const template = vocabularyPrompts.question_generation as TemplateDefinition;
+  return applyTemplate(template.prompt_template, {
+    word: sanitizeInput(word),
+    sentence_context: sanitizeInput(sentenceContext),
+  });
 }
 
-export function buildStoryFinale(
-  topic: string,
-  resolutionIdea: string,
-): string {
-  const asset = loadPromptAsset("story.finale");
-  const resolution = resolutionIdea.trim().length > 0
-    ? sanitizeUserInput(resolutionIdea)
-    : "our heroes share what they learned";
-  return asset.template
-    .replace("{topic}", topic)
-    .replace("{resolution}", resolution);
+export function getGrammarFeedbackPrompt(userText: string): string {
+  const template = vocabularyPrompts.grammar_feedback as TemplateDefinition;
+  return applyTemplate(template.prompt_template, {
+    user_text: sanitizeInput(userText),
+  });
 }
 
-function sanitizeUserInput(input: string): string {
-  return input.trim().replace(/\s+/g, " ");
-}
+export type { StoryPromptKey };

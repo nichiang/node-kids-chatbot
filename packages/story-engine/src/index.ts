@@ -73,7 +73,8 @@ const storyContinuationNode: StoryNode = {
     if (!session.topic) {
       throw new Error("Cannot continue story without a topic");
     }
-    const continuation = buildStoryContinuation(session.topic, userInput);
+    const contextWindow = session.storyParts.slice(-3).join(' ');
+    const continuation = buildStoryContinuation(session.topic, contextWindow);
     const updatedSession: StorySessionState = {
       ...session,
       storyParts: [...session.storyParts, continuation],

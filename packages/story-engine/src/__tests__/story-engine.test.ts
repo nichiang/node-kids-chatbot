@@ -30,7 +30,7 @@ describe("StoryEngine", () => {
     );
 
     expect(continuationTurn.session.turnId).toBe(2);
-    expect(continuationTurn.responseText).toContain("glowing robot friend");
+    expect(continuationTurn.responseText).toContain("Continue the story about space");
     expect(continuationTurn.session.storyParts).toHaveLength(2);
     expect(continuationTurn.session.isComplete).toBe(false);
 

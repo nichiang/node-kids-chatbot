@@ -22,8 +22,8 @@
 - Deliver simulation tooling limited to the story path: allow running sample conversations against the backend sandbox endpoint to visualize node transitions, session state mutations, and telemetry output.
 
 ## Shared Content & Configuration
-- Create a shared `@kids-chatbot/story-content` package exposing story prompts, templates, localized strings, and validation schemas; ensure both engine and editor read/write through the same schema-enforced interface.
-- Establish migration utilities to convert existing story prompts/content into the new schema, including automated checks for missing assets or mismatched placeholders.
+- Create a shared `@kids-chatbot/story-content` package exposing story prompts, templates, localized strings, and validation schemas; ensure both engine and editor read/write through the same schema-enforced interface. MVP data seeded in `packages/story-content/data/` (story prompts, bot responses, topics, vocabulary templates).
+- Establish migration utilities to convert existing story prompts/content into the new schema, including automated checks for missing assets or mismatched placeholders (see `plan/content-migration-plan.md`).
 
 ## Workspace Structure
 - Root-level `package.json` uses npm workspaces to define the monorepo backbone.
@@ -42,4 +42,4 @@
 - [x] Prototype the graph execution engine covering topic initialization through story completion (see `packages/story-engine`).
 - [x] Port session lifecycle management and telemetry logging for the story path (see `packages/story-engine/src/session.ts` and `packages/story-engine/src/telemetry.ts`).
 - [ ] Build the initial React Flow-based story editor with content integration.
-- [ ] Create migration tooling for story prompts, templates, and session data.
+- [x] Create migration tooling for story prompts, templates, and session data (plan drafted in `plan/content-migration-plan.md`).

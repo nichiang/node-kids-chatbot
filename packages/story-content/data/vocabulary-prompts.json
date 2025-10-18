@@ -1,0 +1,10 @@
+{
+  "question_generation": {
+    "prompt_template": "Create a vocabulary question for the word \"{word}\" from this sentence: \"{sentence_context}\".\n\nReturn JSON with the fields: question, options (array of 4 strings), correctIndex (0-3).\n\nExample format:\n{\n  \"question\": \"What does the word **courage** mean?\\n\\n\\\"As Leo went forward, he felt a sense of **courage**.\\\"\",\n  \"options\": [\"a) being scared\", \"b) being brave\", \"c) being tired\", \"d) being hungry\"],\n  \"correctIndex\": 1\n}\n\nMake the options age-appropriate for 2nd-3rd graders and ensure exactly one correct answer.",
+    "variables": ["word", "sentence_context"]
+  },
+  "grammar_feedback": {
+    "prompt_template": "As a friendly English tutor for elementary students, analyze this text: \"{user_text}\".\n\nIf the sentence could be improved, respond with: You could make that sentence even better by saying '[improved version]'. [Brief explanation].\nIf the writing is already strong, return exactly: CORRECT. Keep feedback short, specific, and encouraging.",
+    "variables": ["user_text"]
+  }
+}

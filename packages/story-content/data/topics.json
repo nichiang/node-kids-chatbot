@@ -1,0 +1,25 @@
+{
+  "topic_keywords": {
+    "space": ["space", "planet", "star", "rocket", "astronaut", "galaxy"],
+    "animals": ["animal", "dog", "cat", "elephant", "lion", "bird"],
+    "fantasy": ["fantasy", "magic", "dragon", "wizard", "fairy", "enchanted"],
+    "sports": ["sport", "soccer", "football", "basketball", "tennis"],
+    "ocean": ["ocean", "sea", "fish", "dolphin", "wave"],
+    "adventure": ["adventure", "explore", "journey", "quest"],
+    "mystery": ["mystery", "detective", "clue", "solve", "secret"],
+    "food": ["food", "cooking", "pizza", "snack", "tasty"],
+    "inventions": ["invention", "science", "robot", "gadget"]
+  },
+  "theme_mapping": {
+    "fantasy": "theme-fantasy",
+    "sports": "theme-sports",
+    "animals": "theme-animals",
+    "ocean": "theme-ocean",
+    "space": "theme-space",
+    "mystery": "theme-elegant",
+    "adventure": "theme-elegant",
+    "food": "theme-food",
+    "inventions": "theme-space"
+  },
+  "default_theme": "theme-space"
+}

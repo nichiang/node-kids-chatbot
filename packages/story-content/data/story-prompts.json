@@ -1,0 +1,15 @@
+{
+  "description": "Minimal storywriting prompts needed for the TypeScript prototype.",
+  "story_opening": {
+    "prompt_template": "The child has chosen the topic: {topic}. Write an engaging opening paragraph that is 2-4 sentences long using vocabulary suitable for a strong 2nd grader or 3rd grader. Bold 2-3 vocabulary words using **word** format. End the paragraph with an invitation for the child to add the next part of the story without offering multiple-choice options.",
+    "variables": ["topic"]
+  },
+  "story_continuation": {
+    "prompt_template": "Continue the story about {topic}. Previous context: {context}. Write a paragraph with 2-4 sentences, keep the tone age-appropriate, and invite the child to continue the adventure without giving them options. Bold 2-3 vocabulary words using **word** format.",
+    "variables": ["topic", "context"]
+  },
+  "story_finale": {
+    "prompt_template": "Wrap up the {topic} adventure by weaving in this idea from the child: {resolution}. Write 2-3 sentences that conclude the story in a satisfying, age-appropriate way and finish with 'The end!'.",
+    "variables": ["topic", "resolution"]
+  }
+}

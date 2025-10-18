@@ -1,0 +1,14 @@
+{
+  "errors": {
+    "mode_error": "I'm not sure what mode that is! Try storywriting or fun facts.",
+    "processing_error": "Sorry, I'm having trouble right now. Please try again!"
+  },
+  "story_mode": {
+    "story_ending": "The end! 🌟"
+  },
+  "vocabulary": {
+    "intro_after_story": "Great story! Now let's test your vocabulary:",
+    "next_question": "Let's try another vocabulary question:",
+    "completion_celebration": "Wonderful job with the vocabulary! You've done great! Would you like to write another story? Here are some fun ideas:"
+  }
+}
