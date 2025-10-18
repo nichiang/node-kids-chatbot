@@ -1,7 +1,7 @@
 # Node-Based Refactor Plan (Storywriting Focus)
 
 ## Overview
-- Rebuild the storywriting experience from the current FastAPI service (`backend/app.py`) into a TypeScript-first monorepo (pnpm workspace or Nx) with clearly separated packages for the graph engine, shared types/content, and the visual editor.
+- Rebuild the storywriting experience from the current FastAPI service (`backend/app.py`) into a TypeScript-first monorepo (npm workspaces with option to layer Nx later) with clearly separated packages for the graph engine, shared types/content, and the visual editor.
 - Keep content and prompt assets externalized by migrating the story-related JSON from `backend/content_manager.py` into a versioned content package that both the engine and editor consume with schema validation.
 
 ## Story Flow Discovery & Domain Mapping
@@ -24,6 +24,12 @@
 - Create a shared `@kids-chatbot/story-content` package exposing story prompts, templates, localized strings, and validation schemas; ensure both engine and editor read/write through the same schema-enforced interface.
 - Establish migration utilities to convert existing story prompts/content into the new schema, including automated checks for missing assets or mismatched placeholders.
 
+## Workspace Structure
+- Root-level `package.json` uses npm workspaces to define the monorepo backbone.
+- `packages/story-types`, `packages/story-content`, and `packages/story-engine` house shared types, content adapters, and the execution runtime.
+- `apps/story-api` wraps the engine with an HTTP interface; `apps/story-editor` is the React-based node editor scaffold.
+- Shared tooling files (`tsconfig.base.json`, future ESLint/Vitest configs) live at the repo root for cross-package consistency.
+
 ## Telemetry, Testing, and DevOps (Story Phase)
 - Re-implement latency and educational logging for storywriting as middleware/events within the new backend, emitting structured telemetry compatible with current analytics expectations.
 - Build a testing strategy focused on the story flow: unit tests for node handlers, graph-level integration tests replaying legacy scenarios, and contract tests validating API compatibility with existing clients.
@@ -31,7 +37,7 @@
 
 ## Todo List
 - [x] Produce a detailed storywriting domain map and node taxonomy document (see `plan/storywriting-domain-map.md`).
-- [ ] Decide on monorepo tooling and scaffold the TypeScript workspace for story components.
+- [x] Decide on monorepo tooling and scaffold the TypeScript workspace for story components (see `plan/workspace-decision.md`).
 - [ ] Prototype the graph execution engine covering topic initialization through story completion.
 - [ ] Port session lifecycle management and telemetry logging for the story path.
 - [ ] Build the initial React Flow-based story editor with content integration.

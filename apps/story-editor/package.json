@@ -1,0 +1,20 @@
+{
+  "name": "story-editor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "vite",
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "test": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@kids-chatbot/story-engine": "0.1.0",
+    "@kids-chatbot/story-content": "0.1.0",
+    "@kids-chatbot/story-types": "0.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}

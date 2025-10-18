@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "baseUrl": ".",
+    "paths": {
+      "@kids-chatbot/story-engine": ["packages/story-engine/src"],
+      "@kids-chatbot/story-content": ["packages/story-content/src"],
+      "@kids-chatbot/story-types": ["packages/story-types/src"],
+      "@kids-chatbot/story-editor/*": ["apps/story-editor/src/*"]
+    }
+  },
+  "include": []
+}

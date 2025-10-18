@@ -1,0 +1,17 @@
+{
+  "name": "story-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "ts-node-dev --respawn src/index.ts",
+    "lint": "eslint \"src/**/*.ts\"",
+    "test": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@kids-chatbot/story-engine": "0.1.0"
+  }
+}
