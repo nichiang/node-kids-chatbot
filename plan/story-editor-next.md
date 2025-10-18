@@ -40,7 +40,7 @@
 
 ## Todo
 - [x] Implement drag/drop from palette with dynamic node creation.
-- [ ] Add node selection + property inspector panel.
+- [x] Add node selection + property inspector panel.
 - [ ] Wire prompt/content pickers to `@kids-chatbot/story-content` data.
 - [ ] Persist graph state to local storage and enhance import/export validation.
 - [ ] Show session state and node highlighting during simulations.

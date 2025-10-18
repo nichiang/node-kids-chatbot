@@ -3,6 +3,7 @@ import { NodePalette } from "./components/NodePalette";
 import { StoryGraphCanvas } from "./components/StoryGraphCanvas";
 import { GraphControls } from "./components/GraphControls";
 import { SimulationPanel } from "./components/SimulationPanel";
+import { NodeInspector } from "./components/NodeInspector";
 
 import "reactflow/dist/style.css";
 import "./styles.css";
@@ -17,6 +18,7 @@ export function App() {
           <SimulationPanel />
           <StoryGraphCanvas />
         </div>
+        <NodeInspector />
       </div>
     </ReactFlowProvider>
   );

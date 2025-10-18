@@ -3,11 +3,14 @@ import { useCallback } from "react";
 import { useStoryGraph } from "../state/use-story-graph";
 import { nodeTypes } from "./nodes";
 import type { StoryEditorNodeType } from "../graphs/node-types";
+import { useSelection } from "../state/use-selection";
 
 export function StoryGraphCanvas() {
   const graph = useStoryGraph((state) => state.graph);
   const setGraph = useStoryGraph((state) => state.setGraph);
   const reactFlowInstance = useReactFlow();
+  const selectedNodeId = useSelection((state) => state.selectedNodeId);
+  const setSelectedNodeId = useSelection((state) => state.setSelectedNodeId);
 
   const handleDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
@@ -51,6 +54,9 @@ export function StoryGraphCanvas() {
         nodeTypes={nodeTypes}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
+        onNodeClick={(_, node) => setSelectedNodeId(node.id)}
+        onPaneClick={() => setSelectedNodeId(undefined)}
+        selectedNodes={graph.nodes.filter((node) => node.id === selectedNodeId)}
       >
         <MiniMap />
         <Controls />
