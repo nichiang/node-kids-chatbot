@@ -1,0 +1,54 @@
+{
+  "id": "story-default",
+  "label": "Storywriting Happy Path",
+  "nodes": [
+    {
+      "id": "topic-node",
+      "type": "topic-classifier",
+      "position": { "x": 0, "y": 0 },
+      "data": {
+        "description": "Detect story topic from learner message"
+      }
+    },
+    {
+      "id": "opening-node",
+      "type": "opening-story-prompt",
+      "position": { "x": 220, "y": 0 },
+      "data": {
+        "promptRef": "story_prompts.story_opening",
+        "notes": "Uses renderStoryOpening from story-content"
+      }
+    },
+    {
+      "id": "continuation-node",
+      "type": "continuation-prompt",
+      "position": { "x": 440, "y": -40 },
+      "data": {
+        "promptRef": "story_prompts.story_continuation",
+        "contextWindow": 3
+      }
+    },
+    {
+      "id": "finale-node",
+      "type": "finale-prompt",
+      "position": { "x": 660, "y": 40 },
+      "data": {
+        "promptRef": "story_prompts.story_finale"
+      }
+    },
+    {
+      "id": "telemetry-node",
+      "type": "telemetry-logger",
+      "position": { "x": 880, "y": 0 },
+      "data": {
+        "eventTypes": ["story_opening", "story_continuation", "story_completion"]
+      }
+    }
+  ],
+  "edges": [
+    { "id": "edge-topic-opening", "source": "topic-node", "target": "opening-node" },
+    { "id": "edge-opening-continuation", "source": "opening-node", "target": "continuation-node" },
+    { "id": "edge-continuation-finale", "source": "continuation-node", "target": "finale-node" },
+    { "id": "edge-finale-telemetry", "source": "finale-node", "target": "telemetry-node" }
+  ]
+}

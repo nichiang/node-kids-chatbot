@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { StoryGraphDefinition } from "../graphs/node-types";
 import { demoGraph } from "../graphs/node-types";
+import sampleGraph from "../graphs/sample-graph.json" assert { type: "json" };
 
 interface StoryGraphState {
   graph: StoryGraphDefinition;
@@ -8,6 +9,6 @@ interface StoryGraphState {
 }
 
 export const useStoryGraph = create<StoryGraphState>((set) => ({
-  graph: demoGraph,
+  graph: sampleGraph as typeof demoGraph,
   setGraph: (graph) => set({ graph }),
 }));
