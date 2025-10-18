@@ -4,7 +4,7 @@
     "composite": true,
     "outDir": "dist"
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "src/graphs/**/*.json"],
   "references": [
     { "path": "../../packages/story-engine" },
     { "path": "../../packages/story-content" },

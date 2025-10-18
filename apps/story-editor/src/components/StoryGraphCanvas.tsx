@@ -1,8 +1,21 @@
-import ReactFlow, { Background, Controls, MiniMap, useReactFlow, applyNodeChanges, applyEdgeChanges } from "reactflow";
+import ReactFlow, {
+  Background,
+  Controls,
+  MiniMap,
+  useReactFlow,
+  applyNodeChanges,
+  applyEdgeChanges,
+  NodeChange,
+  EdgeChange,
+} from "reactflow";
 import { useCallback } from "react";
 import { useStoryGraph } from "../state/use-story-graph";
 import { nodeTypes } from "./nodes";
-import type { StoryEditorNodeType } from "../graphs/node-types";
+import type {
+  StoryEditorNodeType,
+  StoryGraphNode,
+  StoryGraphEdge,
+} from "../graphs/node-types";
 import { useSelection } from "../state/use-selection";
 
 export function StoryGraphCanvas() {
@@ -30,7 +43,7 @@ export function StoryGraphCanvas() {
         y: event.clientY,
       });
 
-      const newNode = {
+      const newNode: StoryGraphNode = {
         id: `node-${Date.now()}`,
         type: nodeType,
         position,
@@ -45,19 +58,37 @@ export function StoryGraphCanvas() {
     [graph, reactFlowInstance, setGraph],
   );
 
-  const handleNodesChange = useCallback((changes) => {
-    updateGraph((current) => ({
-      ...current,
-      nodes: applyNodeChanges(changes, current.nodes),
-    }));
-  }, [updateGraph]);
+  const handleNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      updateGraph((current) => {
+        const nodes = applyNodeChanges(changes, current.nodes as any).map((node) => ({
+          ...node,
+          type: (node.type ?? "topic-classifier") as StoryEditorNodeType,
+        })) as StoryGraphNode[];
+        return {
+          ...current,
+          nodes,
+        };
+      });
+    },
+    [updateGraph],
+  );
 
-  const handleEdgesChange = useCallback((changes) => {
-    updateGraph((current) => ({
-      ...current,
-      edges: applyEdgeChanges(changes, current.edges),
-    }));
-  }, [updateGraph]);
+  const handleEdgesChange = useCallback(
+    (changes: EdgeChange[]) => {
+      updateGraph((current) => {
+        const edges = applyEdgeChanges(changes, current.edges as any).map((edge) => ({
+          ...edge,
+          label: typeof edge.label === "string" ? edge.label : undefined,
+        })) as StoryGraphEdge[];
+        return {
+          ...current,
+          edges,
+        };
+      });
+    },
+    [updateGraph],
+  );
 
   return (
     <section className="graph-canvas">
